@@ -4,7 +4,6 @@ const TILE_SIZE = 32;
 let keys = {};
 
 const pieces = [
-  
   {
     layout: [ // I-piece
       [0, 0, 0, 0],
@@ -61,6 +60,9 @@ let pieceX = 1, pieceY = 1;
 let activeIndex = 6;
 let activePiece = JSON.parse(JSON.stringify(pieces[activeIndex].layout));
 
+let longTime = -1;
+let shortTime = -1;
+
 let nathanImage = undefined;
 
 let board = [
@@ -84,17 +86,14 @@ let board = [
   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-]
+];
 
-let gameSpeed = 20;
+let gameSpeed = 40;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
 
-  nathanImage = loadImage('https://i.imgur.com/qNRBIvl.png');
+  nathanImage = loadImage('https://i.imgur.com/Bx6Eeih.png');
 }
 
 function windowResized() {
@@ -102,17 +101,68 @@ function windowResized() {
 }
 
 function update() {
-  if (keys[LEFT_ARROW] == 0 || (keys[LEFT_ARROW] > 4 && keys[LEFT_ARROW] % 2 == 0)) {
+
+  if (longTime > 0 || shortTime > 0) {
+    longTime -= 1;
+    shortTime -= keys[DOWN_ARROW] > 0 ? 10 : 1;
+
+    if (longTime < 0 || shortTime < 0) {
+
+      const size = activePiece.length;
+      for (let x = 0; x < size; x++) {
+        for (let y = 0; y < size; y++) {
+          if (activePiece[y][x]) {
+            board[pieceY + y][pieceX + x] = activeIndex + 1;
+          }
+        }
+      }
+
+      activeIndex = floor(random(0, pieces.length));
+      activePiece = pieces[activeIndex].layout;
+      
+      pieceX = 1;
+      pieceY = 1;
+
+      longTime = -1;
+      shortTime = -1;
+    }
+  }
+
+  if (keys[LEFT_ARROW] == 0 || (keys[LEFT_ARROW] > 4 && keys[LEFT_ARROW] % 4 == 0)) {
     moveLeft();
+    if (shortTime > 0) {
+      shortTime = gameSpeed * 2;
+    }
   }
-  if (keys[RIGHT_ARROW] == 0 || (keys[RIGHT_ARROW] > 4 && keys[RIGHT_ARROW] % 2 == 0)) {
+  if (keys[RIGHT_ARROW] == 0 || (keys[RIGHT_ARROW] > 4 && keys[RIGHT_ARROW] % 4 == 0)) {
     moveRight();
+    if (shortTime > 0) {
+      shortTime = gameSpeed * 2;
+    }
   }
-  if (keys[DOWN_ARROW] == 0 || keys[DOWN_ARROW] % 2 == 0) {
+  if (keys[UP_ARROW] == 0 || (keys[UP_ARROW] > 4 && keys[UP_ARROW] % 4 == 0)) {
+    rotateRight();
+    if (shortTime > 0) {
+      shortTime = gameSpeed * 2;
+    }
+  }
+
+  if (keys[DOWN_ARROW] > 0) {
+    if (keys[DOWN_ARROW] % 4 == 0) {
+      moveDown();
+    }
+  } else if (frameCount % gameSpeed === 0) {
     moveDown();
   }
-  if (keys[UP_ARROW] == 0 || (keys[UP_ARROW] > 4 && keys[UP_ARROW] % 2 == 0)) {
-    activePiece = rotateRight(activePiece);
+
+  if (collision(activePiece, pieceX, pieceY + 1)) {
+    if (longTime < 0) {
+      longTime = gameSpeed * 6;
+      shortTime = gameSpeed * 2;
+    }
+  } else {
+    longTime = -1;
+    shortTime = -1;
   }
 
   Object.keys(keys).forEach(key => {
@@ -121,9 +171,6 @@ function update() {
     }
   });
 
-  if (frameCount % gameSpeed === 0) {
-    moveDown();
-  }
 }
 
 
@@ -136,26 +183,42 @@ function draw() {
   const boardWidth = BOARD_WIDTH * TILE_SIZE;
   const boardHeight = BOARD_HEIGHT * TILE_SIZE;
 
+  push();
+  translate(boardX, boardY);
+
   noStroke();
   fill(255);
-  rect(boardX, boardY, boardWidth, boardHeight);
+  rect(0, 0, boardWidth, boardHeight);
 
-  stroke(200);
-  noFill();
+  
   for (let x = 0; x < BOARD_WIDTH; x++) {
     for (let y = 0; y < BOARD_HEIGHT; y++) {
-      rect(boardX + TILE_SIZE * x, boardY + TILE_SIZE * y, TILE_SIZE, TILE_SIZE);
+      
+      let tile = board[y][x];
+      if (tile > 0) {
+        let col = pieces[tile - 1].color;
+        tint(col[0], col[1], col[2]);
+        image(nathanImage, TILE_SIZE * x, TILE_SIZE * y, TILE_SIZE, TILE_SIZE);
+
+        stroke(0);
+        noFill();
+        rect(TILE_SIZE * x, TILE_SIZE * y, TILE_SIZE, TILE_SIZE);
+      } else {
+        stroke(200);
+        noFill();
+        rect(TILE_SIZE * x, TILE_SIZE * y, TILE_SIZE, TILE_SIZE);
+      }
     }
   }
 
   stroke(0);
-  rect(boardX, boardY, boardWidth, boardHeight);
+  rect(0, 0, boardWidth, boardHeight);
   
   fill(0);
   noStroke();
   textSize(32);
   textAlign(LEFT, BOTTOM);
-  text("NathanTris", boardX, boardY);
+  text("NathanTris ", 0, 0);
 
   // Draw board
   const size = activePiece.length;
@@ -165,13 +228,14 @@ function draw() {
     for (let y = 0; y < size; y++) {
       if (activePiece[y][x]) {
         let col = pieces[activeIndex].color;
-        tint(col[0], col[1], col[2], sin(frameCount * 0.2) * 50 + 200);
-        image(nathanImage, boardX + (pieceX + x) * TILE_SIZE, boardY + (pieceY + y) * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-        rect(boardX + (pieceX + x) * TILE_SIZE, boardY + (pieceY + y) * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        tint(col[0], col[1], col[2], (longTime > 0) ? sin(frameCount * 0.2) * 50 + 200 : 255);
+        image(nathanImage, (pieceX + x) * TILE_SIZE, (pieceY + y) * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        rect((pieceX + x) * TILE_SIZE, (pieceY + y) * TILE_SIZE, TILE_SIZE, TILE_SIZE);
       }
     }
   }
 
+  pop();
 }
 
 function keyPressed() {
@@ -182,7 +246,11 @@ function keyReleased() {
   keys[keyCode] = -1;
 }
 
-function rotateRight(piece) {
+function rotateRight() {
+  activePiece = rotateArrayRight(activePiece);
+}
+
+function rotateArrayRight(piece) {
   let rotated = JSON.parse(JSON.stringify(piece));
   const size = piece.length;
   for (let x = 0; x < size; x++) {
@@ -194,21 +262,37 @@ function rotateRight(piece) {
 }
 
 function moveLeft() {
-  pieceX -= 1;
+  if (!collision(activePiece, pieceX - 1, pieceY)) {
+    pieceX -= 1;
+  }
 }
 
 function moveRight() {
-  pieceX += 1;
+  if (!collision(activePiece, pieceX + 1, pieceY)) {
+    pieceX += 1;
+  }
 }
 
 function moveDown() {
-  pieceY += 1;
+  if (!collision(activePiece, pieceX, pieceY + 1)) {
+    pieceY += 1;
+  }
 }
 
-function collision() {
-
+function collision(piece, x1, y1) {
+  const size = piece.length;
+  for (let x = 0; x < size; x++) {
+    for (let y = 0; y < size; y++) {
+      if (piece[y][x]) {
+        if (doesCollide(x + x1, y + y1)) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
 }
 
 function doesCollide(x, y) {
-  
+  return (x < 0 || x > 9 || y >= 20) || (board[y][x] > 0);
 }
