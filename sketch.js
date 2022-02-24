@@ -193,7 +193,7 @@ let pieceX = 3, pieceY = -2;
 let dropX = 1, dropY = 1;
 
 let activeRot = 0;
-let activeIndex = 6;
+let activeIndex = 3;
 let activePiece = JSON.parse(JSON.stringify(pieces[activeIndex].layout));
 
 let longTime = -1;
@@ -201,28 +201,7 @@ let shortTime = -1;
 
 let nathanImage = undefined;
 
-let board = [
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-];
+let board = [];
 
 let gameSpeed = 40;
 
@@ -230,21 +209,100 @@ let position = {x: 0, y: 0};
 let rotation = 0;
 let scalar = 1;
 
+let score = 0;
+let lines = 0;
+
+let hold = 0;
+let holdDisabled = false;
+
+let bag = [];
+
 function setup() {
   createCanvas(windowWidth, windowHeight);
 
   nathanImage = loadImage('https://i.imgur.com/Bx6Eeih.png');
+
+  reset();
+}
+
+function reset() {
+  for (let i = 0; i < BOARD_HEIGHT; i++) {
+    let line = [];
+    for (let j = 0; j < BOARD_WIDTH; j++) {
+      line.push(0);
+    }
+    board.push(line);
+  }
+
+  let newTiles = [0, 1, 2, 3, 4, 5, 6];
+  newTiles = shuffle(newTiles);
+    
+  newTiles.forEach(tile => {
+    bag.push(tile);
+  });
+
+  let newTile = bag.shift();
+  activeIndex = newTile;
+  activePiece = pieces[activeIndex].layout;
+  activeRot = 0;
 }
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
 
+function shuffle(array) {
+  let currentIndex = array.length,  randomIndex;
+
+  // While there remain elements to shuffle...
+  while (currentIndex != 0) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    // And swap it with the current element.
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex], array[currentIndex]];
+  }
+
+  return array;
+}
+
+function shiftHold() {
+  if (holdDisabled) {
+    return;
+  }
+  let temp = hold;
+  hold = activeIndex;
+
+  activeIndex = temp;
+  activePiece = pieces[activeIndex].layout;
+  activeRot = 0;
+
+  pieceX = 3;
+  pieceY = -2;
+
+  longTime = -1;
+  shortTime = -1;
+
+  holdDisabled = true;
+}
+
 function update() {
 
+  while(bag.length < 7) {
+    let newTiles = [0, 1, 2, 3, 4, 5, 6];
+    newTiles = shuffle(newTiles);
+    
+    newTiles.forEach(tile => {
+      bag.push(tile);
+    });
+  }
+
   position = {x: lerp(position.x, 0, 0.1), y: lerp(position.y, 0, 0.1)};
-  rotation = lerp(rotation, 0, 0.2);
-  scalar = lerp(scalar, 1, 0.2);
+  rotation = lerp(rotation, 0, 0.1);
+  scalar = lerp(scalar, 1, 0.1);
 
   if (longTime >= 0 || shortTime >= 0) {
     longTime -= 1;
@@ -268,7 +326,7 @@ function update() {
       // clear lines
       let linesRemoved = 0;
       board = board.filter(line => {
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < BOARD_WIDTH; i++) {
           if (line[i] == 0) {
             return true;
           }
@@ -285,7 +343,8 @@ function update() {
       rotation += linesRemoved * 0.2;
       
 
-      activeIndex = floor(random(0, pieces.length));
+      let newTile = bag.shift();
+      activeIndex = newTile;
       activePiece = pieces[activeIndex].layout;
       activeRot = 0;
       
@@ -294,6 +353,8 @@ function update() {
 
       longTime = -1;
       shortTime = -1;
+
+      holdDisabled = false;
     }
   }
 
@@ -308,6 +369,9 @@ function update() {
   }
   if (keys[90] == 0 || (keys[90] > 10 && keys[90] % 8 == 0)) {
     rotatePiece(true);
+  }
+  if (keys[67] == 0) {
+    shiftHold();
   }
 
   if (keys[DOWN_ARROW] > 0) {
@@ -407,12 +471,6 @@ function draw() {
   stroke(0);
   noFill(0);
   rect(-boardWidth / 2, - boardHeight / 2, boardWidth, boardHeight);
-  
-  fill(0);
-  noStroke();
-  textSize(32);
-  textAlign(LEFT, BOTTOM);
-  text("Chentris ", -boardWidth / 2, -boardHeight / 2);
 
   const size = activePiece.length;
   // Target
@@ -441,6 +499,58 @@ function draw() {
     }
   }
 
+  for (let i = 0; i < 5; i++) {
+    let bagPiece = pieces[bag[i]];
+    const bagSize = bagPiece.layout.length;
+
+    for (let x = 0; x < bagSize; x++) {
+      for (let y = 0; y < bagSize; y++) {
+        if (bagPiece.layout[y][x]) {
+          let col = bagPiece.color;
+          fill(col[0], col[1], col[2]);
+          stroke(0);
+          rect(TILE_SIZE * x + boardWidth / 2 + TILE_SIZE, TILE_SIZE * y - boardHeight / 2 + i * (boardHeight / 5), TILE_SIZE, TILE_SIZE);
+        }
+      }
+    }
+  }
+
+  let holdPiece = pieces[hold];
+  const holdSize = holdPiece.layout.length;
+
+  for (let x = 0; x < holdSize; x++) {
+    for (let y = 0; y < holdSize; y++) {
+      if (holdPiece.layout[y][x]) {
+        if (!holdDisabled) {
+          let col = holdPiece.color;
+          fill(col[0], col[1], col[2]);
+        } else {
+          fill(200);
+        }
+        stroke(0);
+        rect(TILE_SIZE * x - boardWidth / 2 - TILE_SIZE * 5, TILE_SIZE * y - boardHeight / 2 + TILE_SIZE, TILE_SIZE, TILE_SIZE);
+      }
+    }
+  }
+
+  fill(0);
+  noStroke();
+  textSize(32);
+  textAlign(LEFT, BOTTOM);
+  textStyle(BOLD);
+  text("Chentris", -boardWidth / 2, -boardHeight / 2);
+
+  /*
+  textStyle(BOLD);
+  textAlign(RIGHT, BOTTOM);
+  textSize(16);
+  text("Score", -boardWidth / 2 - 4, 0);
+
+  textStyle(NORMAL);
+  textAlign(RIGHT, TOP);
+  textSize(32);
+  text(score, -boardWidth / 2 - 4, 0);
+  */
   pop();
 }
 
@@ -543,5 +653,5 @@ function collision(piece, x1, y1) {
 }
 
 function doesCollide(x, y) {
-  return (x < 0 || x > 9 || y >= 20) || (y >= 0 && board[y][x] > 0);
+  return (x < 0 || x >= BOARD_WIDTH || y >= BOARD_HEIGHT) || (y >= 0 && board[y][x] > 0);
 }
