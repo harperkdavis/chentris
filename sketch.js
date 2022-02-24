@@ -303,8 +303,11 @@ function update() {
   if (keys[RIGHT_ARROW] == 0 || (keys[RIGHT_ARROW] > 4 && keys[RIGHT_ARROW] % 4 == 0)) {
     moveRight();
   }
-  if (keys[UP_ARROW] == 0 || (keys[UP_ARROW] > 4 && keys[UP_ARROW] % 4 == 0)) {
-    rotateRight();
+  if (keys[UP_ARROW] == 0 || (keys[UP_ARROW] > 10 && keys[UP_ARROW] % 8 == 0)) {
+    rotatePiece(false);
+  }
+  if (keys[90] == 0 || (keys[90] > 10 && keys[90] % 8 == 0)) {
+    rotatePiece(true);
   }
 
   if (keys[DOWN_ARROW] > 0) {
@@ -449,8 +452,8 @@ function keyReleased() {
   keys[keyCode] = -1;
 }
 
-function rotateRight() {
-  let newPiece = rotateArrayRight(activePiece);
+function rotatePiece(left) {
+  let newPiece = left ? rotateArrayLeft(activePiece) : rotateArrayRight(activePiece);
   let newRot = ((activeRot + 1) % 4);
 
   let wk;
@@ -480,6 +483,17 @@ function rotateArrayRight(piece) {
   for (let x = 0; x < size; x++) {
     for (let y = 0; y < size; y++) {
       rotated[x][size - 1 - y] = piece[y][x];
+    }
+  }
+  return rotated;
+}
+
+function rotateArrayLeft(piece) {
+  let rotated = JSON.parse(JSON.stringify(piece));
+  const size = piece.length;
+  for (let x = 0; x < size; x++) {
+    for (let y = 0; y < size; y++) {
+      rotated[size - 1 - x][y] = piece[y][x];
     }
   }
   return rotated;
