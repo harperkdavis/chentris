@@ -1,5 +1,7 @@
 const BOARD_WIDTH = 10, BOARD_HEIGHT = 20;
 const TILE_SIZE = 32;
+const MIN_GAME_SPEED = 1, MAX_GAME_SPEED = 40;
+const SHORT_TIME = 80, LONG_TIME = 240;
 
 let keys = {};
 
@@ -216,6 +218,7 @@ let scalar = 1;
 
 let score = 0;
 let lines = 0;
+let level = 1;
 
 let hold = 0;
 let holdDisabled = false;
@@ -257,13 +260,14 @@ function reset() {
   activePiece = pieces[activeIndex].layout;
   activeRot = 0;
 
-  gameSpeed = 40;
+  gameSpeed = MAX_GAME_SPEED;
 
   hold = 0;
   holdDisabled = false;
 
   score = 0;
   lines = 0;
+  level = 1;
 
   pieceX = 3;
   pieceY = -2;
@@ -385,12 +389,14 @@ function update() {
         board.unshift([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
       }
       lines += linesRemoved;
-      score += linesRemoved * linesRemoved * 1000;
+      score += linesRemoved * linesRemoved * 1000 * level;
 
       position.y += linesRemoved * linesRemoved * 4;
       scalar += linesRemoved * 0.2;
       rotation += linesRemoved * 0.2;
       
+      level = floor(lines / 10) + 1;
+      gameSpeed = floor(max(exp(-level / 8) * MAX_GAME_SPEED, MIN_GAME_SPEED));
 
       let newTile = bag.shift();
       activeIndex = newTile;
@@ -445,7 +451,7 @@ function update() {
     position.y -= (pieceY - dropY) * 2;
     rotation += random(-1, 1) > 0 ? 0.04 : -0.04;
 
-    score += (dropY - pieceY) * 5;
+    score += (dropY - pieceY) * 5 * level;
 
     pieceX = dropX;
     pieceY = dropY;
@@ -456,8 +462,8 @@ function update() {
 
   if (collision(activePiece, pieceX, pieceY + 1)) {
     if (longTime < 0) {
-      longTime = gameSpeed * 6;
-      shortTime = gameSpeed * 2;
+      longTime = LONG_TIME;
+      shortTime = SHORT_TIME;
     }
   } else {
     longTime = -1;
@@ -647,6 +653,16 @@ function draw() {
   textAlign(RIGHT, TOP);
   textSize(32);
   text(lines, -boardWidth / 2 - 4, 64);
+
+  textStyle(BOLD);
+  textAlign(RIGHT, BOTTOM);
+  textSize(16);
+  text("Level", -boardWidth / 2 - 4, 128);
+
+  textStyle(NORMAL);
+  textAlign(RIGHT, TOP);
+  textSize(32);
+  text(level, -boardWidth / 2 - 4, 128);
   
   pop();
 }
@@ -712,7 +728,7 @@ function moveLeft() {
     position.x -= 4;
     rotation -= 0.004;
     if (shortTime > 0) {
-      shortTime = gameSpeed * 2;
+      shortTime = SHORT_TIME;
     }
   }
 }
@@ -723,7 +739,7 @@ function moveRight() {
     position.x += 4;
     rotation += 0.004;
     if (shortTime > 0) {
-      shortTime = gameSpeed * 2
+      shortTime = SHORT_TIME;
     }
   }
 }
