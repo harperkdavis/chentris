@@ -306,7 +306,7 @@ function update() {
 
   if (longTime >= 0 || shortTime >= 0) {
     longTime -= 1;
-    shortTime -= keys[DOWN_ARROW] > 0 ? 4 : 1;
+    shortTime -= 1;
 
     if (longTime < 0 || shortTime < 0) {
 
@@ -406,7 +406,7 @@ function update() {
   if (collision(activePiece, pieceX, pieceY + 1)) {
     if (longTime < 0) {
       longTime = gameSpeed * 6;
-      shortTime = gameSpeed;
+      shortTime = floor(gameSpeed * 1.5);
     }
   } else {
     longTime = -1;
@@ -615,7 +615,7 @@ function moveLeft() {
     position.x -= 4;
     rotation -= 0.004;
     if (shortTime > 0) {
-      shortTime = gameSpeed;
+      shortTime = floor(gameSpeed * 1.5);
     }
   }
 }
@@ -626,7 +626,7 @@ function moveRight() {
     position.x += 4;
     rotation += 0.004;
     if (shortTime > 0) {
-      shortTime = gameSpeed;
+      shortTime = floor(gameSpeed * 1.5);
     }
   }
 }
