@@ -364,10 +364,10 @@ function update() {
   if (keys[RIGHT_ARROW] == 0 || (keys[RIGHT_ARROW] > 4 && keys[RIGHT_ARROW] % 4 == 0)) {
     moveRight();
   }
-  if (keys[UP_ARROW] == 0 || (keys[UP_ARROW] > 10 && keys[UP_ARROW] % 8 == 0)) {
+  if (keys[UP_ARROW] == 0) {
     rotatePiece(false);
   }
-  if (keys[90] == 0 || (keys[90] > 10 && keys[90] % 8 == 0)) {
+  if (keys[90] == 0) {
     rotatePiece(true);
   }
   if (keys[67] == 0) {
