@@ -670,11 +670,11 @@ function rotatePiece(left) {
   if (activeIndex !== 3) {
     for (let i = 0; i < 5; i++) {
       let test = wk[i];
-      if (!collision(newPiece, pieceX + test[0], pieceY + test[1])) {
+      if (!collision(newPiece, pieceX + test[0], pieceY - test[1])) {
         activePiece = newPiece;
         activeRot = newRot;
         pieceX += test[0];
-        pieceY += test[1];
+        pieceY -= test[1];
         break;
       }
     }
