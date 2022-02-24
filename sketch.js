@@ -3,6 +3,8 @@ const TILE_SIZE = 32;
 
 let keys = {};
 
+let inMenu = true;
+
 const pieces = [
   {
     layout: [ // I-piece
@@ -222,10 +224,14 @@ function setup() {
 
   nathanImage = loadImage('https://i.imgur.com/Bx6Eeih.png');
 
+  if (localStorage.getItem("tetrisHighScore") == null) {
+    localStorage.setItem("tetrisHighScore", 0);
+  }
   reset();
 }
 
 function reset() {
+  board = [];
   for (let i = 0; i < BOARD_HEIGHT; i++) {
     let line = [];
     for (let j = 0; j < BOARD_WIDTH; j++) {
@@ -233,6 +239,8 @@ function reset() {
     }
     board.push(line);
   }
+
+  bag = [];
 
   let newTiles = [0, 1, 2, 3, 4, 5, 6];
   newTiles = shuffle(newTiles);
@@ -245,6 +253,26 @@ function reset() {
   activeIndex = newTile;
   activePiece = pieces[activeIndex].layout;
   activeRot = 0;
+
+  gameSpeed = 40;
+
+  hold = 0;
+  holdDisabled = false;
+
+  score = 0;
+  lines = 0;
+
+  pieceX = 3;
+  pieceY = -2;
+  dropX = 1;
+  dropY = 1;
+
+  longTime = -1;
+  shortTime = -1;
+
+  position = {x: 0, y: 0};
+  rotation = 0;
+  scalar = 1;
 }
 
 function windowResized() {
@@ -291,6 +319,14 @@ function shiftHold() {
 
 function update() {
 
+  if (inMenu) {
+    if (keys[80] == 0) {
+      inMenu = false;
+      reset();
+    }
+    return;
+  }
+
   while(bag.length < 7) {
     let newTiles = [0, 1, 2, 3, 4, 5, 6];
     newTiles = shuffle(newTiles);
@@ -315,7 +351,15 @@ function update() {
         for (let y = 0; y < size; y++) {
           if (activePiece[y][x]) {
             if (pieceY + y < 0) {
-              // lose da game!
+              inMenu = true;
+
+              position = {x: 0, y: 0};
+              rotation = 0;
+              scalar = 1;
+              
+              if (score > localStorage.getItem("tetrisHighScore")) {
+                localStorage.setItem("tetrisHighScore", score);
+              }
               return;
             }
             board[pieceY + y][pieceX + x] = activeIndex + 1;
@@ -337,6 +381,8 @@ function update() {
       for (let i = 0; i < linesRemoved; i++) {
         board.unshift([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
       }
+      lines += linesRemoved;
+      score += linesRemoved * linesRemoved * 1000;
 
       position.y += linesRemoved * linesRemoved * 4;
       scalar += linesRemoved * 0.2;
@@ -395,6 +441,8 @@ function update() {
   if (keys[32] == 0) {
     position.y -= (pieceY - dropY) * 2;
     rotation += random(-1, 1) > 0 ? 0.04 : -0.04;
+
+    score += (dropY - pieceY) * 5;
 
     pieceX = dropX;
     pieceY = dropY;
@@ -472,6 +520,42 @@ function draw() {
   noFill(0);
   rect(-boardWidth / 2, - boardHeight / 2, boardWidth, boardHeight);
 
+  if (inMenu) {
+    fill(255);
+    stroke(0);
+    rect(-boardWidth / 2 + TILE_SIZE, -boardHeight / 2 + TILE_SIZE, boardWidth - TILE_SIZE * 2, boardHeight - TILE_SIZE * 2);
+
+    fill(0);
+    noStroke();
+    textSize(32);
+    textAlign(LEFT, BOTTOM);
+    textStyle(BOLD);
+    text("Chentris", -boardWidth / 2, -boardHeight / 2);
+
+    textAlign(CENTER, BOTTOM);
+    textSize(24);
+    text("High Score", 0, -boardHeight / 4);
+
+    textAlign(CENTER, TOP);
+    textStyle(NORMAL);
+    textSize(32);
+    text(localStorage.getItem("tetrisHighScore"), 0, -boardHeight / 4 + 4);
+
+    textSize(16);
+    text("Press [P] to play", 0, 0);
+
+    textStyle(BOLD);
+    text("Controls", 0, 40);
+
+    textStyle(NORMAL);
+    text("[ARROW KEYS] to move piece", 0, 60);
+    text("[ARROW UP] to rotate left", 0, 80);
+    text("[Z] to rotate right", 0, 100);
+    text("[SPACE] to drop", 0, 120);
+    text("[C] to use hold", 0, 140);
+    return;
+  }
+
   const size = activePiece.length;
   // Target
   noStroke();
@@ -540,7 +624,7 @@ function draw() {
   textStyle(BOLD);
   text("Chentris", -boardWidth / 2, -boardHeight / 2);
 
-  /*
+  
   textStyle(BOLD);
   textAlign(RIGHT, BOTTOM);
   textSize(16);
@@ -550,7 +634,17 @@ function draw() {
   textAlign(RIGHT, TOP);
   textSize(32);
   text(score, -boardWidth / 2 - 4, 0);
-  */
+
+  textStyle(BOLD);
+  textAlign(RIGHT, BOTTOM);
+  textSize(16);
+  text("Lines", -boardWidth / 2 - 4, 64);
+
+  textStyle(NORMAL);
+  textAlign(RIGHT, TOP);
+  textSize(32);
+  text(lines, -boardWidth / 2 - 4, 64);
+  
   pop();
 }
 
