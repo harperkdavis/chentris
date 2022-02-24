@@ -4,10 +4,13 @@ const TILE_SIZE = 32;
 let keys = {};
 
 let inMenu = true;
+/*
+board[19] = [1, 1, 1, 1, 0, 0, 1, 1, 1, 1]; board[18] = [1, 1, 1, 1, 0, 0, 1, 1, 1, 1]; board[17] = [1, 1, 1, 1, 0, 1, 1, 1, 1, 1]; board[16] = [1, 1, 1, 1, 0, 0, 0, 1, 1, 1]; board[15] = [1, 1, 1, 1, 1, 0, 0, 1, 1, 1]; bag = new Array(1000).fill(4); gameSpeed = 80;
+*/
 
 const pieces = [
   {
-    layout: [ // I-piece
+    layout: [ // I-piece 0
       [0, 0, 0, 0],
       [1, 1, 1, 1],
       [0, 0, 0, 0],
@@ -15,41 +18,41 @@ const pieces = [
     ], color: [127, 245, 233]
   },
   {
-    layout: [ // J-piece
+    layout: [ // J-piece 1
       [1, 0, 0],
       [1, 1, 1],
       [0, 0, 0]
     ], color: [127, 147, 245]
   },
   {
-    layout: [ // L-piece
+    layout: [ // L-piece 2
       [0, 0, 1],
       [1, 1, 1],
       [0, 0, 0]
     ], color: [240, 158, 110]
   },
   {
-    layout: [ // O-piece
+    layout: [ // O-piece 3
       [1, 1],
       [1, 1]
     ], color: [240, 229, 110]
   },
   {
-    layout: [ // T-piece
+    layout: [ // T-piece 4
       [0, 1, 0],
       [1, 1, 1],
       [0, 0, 0]
     ], color: [177, 128, 237]
   },
   {
-    layout: [ // Z-piece
+    layout: [ // Z-piece 5
       [1, 1, 0],
       [0, 1, 1],
       [0, 0, 0]
     ], color: [240, 127, 146]
   },
   {
-    layout: [ // S-piece
+    layout: [ // S-piece 6
       [0, 1, 1],
       [1, 1, 0],
       [0, 0, 0]
@@ -454,7 +457,7 @@ function update() {
   if (collision(activePiece, pieceX, pieceY + 1)) {
     if (longTime < 0) {
       longTime = gameSpeed * 6;
-      shortTime = floor(gameSpeed * 1.5);
+      shortTime = gameSpeed * 2;
     }
   } else {
     longTime = -1;
@@ -709,7 +712,7 @@ function moveLeft() {
     position.x -= 4;
     rotation -= 0.004;
     if (shortTime > 0) {
-      shortTime = floor(gameSpeed * 1.5);
+      shortTime = gameSpeed * 2;
     }
   }
 }
@@ -720,7 +723,7 @@ function moveRight() {
     position.x += 4;
     rotation += 0.004;
     if (shortTime > 0) {
-      shortTime = floor(gameSpeed * 1.5);
+      shortTime = gameSpeed * 2
     }
   }
 }
