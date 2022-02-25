@@ -9,7 +9,7 @@ let inMenu = true;
 /*
 board[19] = [1, 1, 1, 1, 0, 0, 1, 1, 1, 1]; board[18] = [1, 1, 1, 1, 0, 0, 1, 1, 1, 1]; board[17] = [1, 1, 1, 1, 0, 1, 1, 1, 1, 1]; board[16] = [1, 1, 1, 1, 0, 0, 0, 1, 1, 1]; board[15] = [1, 1, 1, 1, 1, 0, 0, 1, 1, 1]; bag = new Array(1000).fill(4); gameSpeed = 80;
 */
-
+// restart pages
 const pieces = [
   {
     layout: [ // I-piece 0
