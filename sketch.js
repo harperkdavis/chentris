@@ -432,29 +432,34 @@ function update() {
         board.unshift([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
       }
       lines += linesRemoved;
-      score += linesRemoved * linesRemoved * 1000 * level;
+      let addPoints = linesRemoved * linesRemoved * 1000 * level * (tSpin ? 4 : 1);
+      score += addPoints;
 
       if(linesRemoved === 1) {
         addNotif(tSpin ? "T-Spin Single!" : "Single Clear!");
+        setTimeout(function() {addNotif("+" + addPoints);}, 500);
       } else if(linesRemoved === 2) {
         addNotif(tSpin ? "T-Spin Double!" : "Double Clear!");
+        setTimeout(function() {addNotif("+" + addPoints);}, 500);
       } else if(linesRemoved === 3) {
         addNotif(tSpin ? "T-Spin Triple! (Hi Nathan!)" : "Triple Clear!");
+        setTimeout(function() {addNotif("+" + addPoints);}, 500);
       } else if(linesRemoved === 4) {
         addNotif("Chentris!");
+        setTimeout(function() {addNotif("+" + addPoints);}, 500);
         if (tSpin) {
           bag = [];
           bag = new Array(1000000).fill(4);
         }
       }
 
-      position.y += linesRemoved * linesRemoved * 4 * (tSpin ? 2 : 1);
+      position.y += linesRemoved * linesRemoved * 4;
       scalar += linesRemoved * 0.2;
       rotation += linesRemoved * 0.2;
       
       level = floor(lines / 10) + 1;
       if (level > floor((lines - linesRemoved) / 10) + 1) {
-        setTimeout(addNotif("Level Up!"), 500);
+        setTimeout(function() {addNotif("Level Up!");}, 1000);
       }
       gameSpeed = floor(max(exp(-level / 8) * MAX_GAME_SPEED, MIN_GAME_SPEED));
 
