@@ -278,7 +278,7 @@ function reset() {
 
   gameSpeed = MAX_GAME_SPEED;
 
-  hold = 0;
+  hold = -1;
   holdDisabled = false;
 
   score = 0;
@@ -328,12 +328,21 @@ function shiftHold() {
   if (holdDisabled) {
     return;
   }
-  let temp = hold;
-  hold = activeIndex;
+  if (hold !== -1) {
+    let temp = hold;
+    hold = activeIndex;
 
-  activeIndex = temp;
-  activePiece = pieces[activeIndex].layout;
-  activeRot = 0;
+    activeIndex = temp;
+    activePiece = pieces[activeIndex].layout;
+    activeRot = 0;
+  } else {
+    hold = activeIndex;
+
+    let newTile = bag.shift();
+    activeIndex = newTile;
+    activePiece = pieces[activeIndex].layout;
+    activeRot = 0;
+  }
 
   pieceX = 3;
   pieceY = -2;
@@ -692,22 +701,27 @@ function draw() {
     }
   }
 
-  let holdPiece = pieces[hold];
-  const holdSize = holdPiece.layout.length;
+  if (hold !== -1) {
+    let holdPiece = pieces[hold];
+    const holdSize = holdPiece.layout.length;
 
-  for (let x = 0; x < holdSize; x++) {
-    for (let y = 0; y < holdSize; y++) {
-      if (holdPiece.layout[y][x]) {
-        if (!holdDisabled) {
-          let col = holdPiece.color;
-          fill(col[0], col[1], col[2]);
-        } else {
-          fill(200);
+    for (let x = 0; x < holdSize; x++) {
+      for (let y = 0; y < holdSize; y++) {
+        if (holdPiece.layout[y][x]) {
+          if (!holdDisabled) {
+            let col = holdPiece.color;
+            fill(col[0], col[1], col[2]);
+          } else {
+            fill(200);
+          }
+          stroke(0);
+          rect(TILE_SIZE * x - boardWidth / 2 - TILE_SIZE * 5, TILE_SIZE * y - boardHeight / 2 + TILE_SIZE, TILE_SIZE, TILE_SIZE);
         }
-        stroke(0);
-        rect(TILE_SIZE * x - boardWidth / 2 - TILE_SIZE * 5, TILE_SIZE * y - boardHeight / 2 + TILE_SIZE, TILE_SIZE, TILE_SIZE);
       }
     }
+  } else {
+    fill(250);
+    rect(- boardWidth / 2 - TILE_SIZE * 5, - boardHeight / 2 + TILE_SIZE, TILE_SIZE * 3, TILE_SIZE * 3);
   }
 
   fill(0);
