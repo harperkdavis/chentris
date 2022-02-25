@@ -461,7 +461,7 @@ function update() {
       if (level > floor((lines - linesRemoved) / 10) + 1) {
         setTimeout(function() {addNotif("Level Up!");}, 1000);
       }
-      gameSpeed = floor(max(exp(-level / 8) * MAX_GAME_SPEED, MIN_GAME_SPEED));
+      gameSpeed = floor(max(exp(-level / 5) * MAX_GAME_SPEED, MIN_GAME_SPEED));
 
       let newTile = bag.shift();
       activeIndex = newTile;
