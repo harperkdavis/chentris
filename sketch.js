@@ -225,6 +225,8 @@ let holdDisabled = false;
 
 let bag = [];
 
+let musicAudio;
+
 function setup() {
   createCanvas(windowWidth, windowHeight);
 
@@ -233,8 +235,19 @@ function setup() {
   if (localStorage.getItem("tetrisHighScore") == null) {
     localStorage.setItem("tetrisHighScore", 0);
   }
+
+  musicAudio = new Audio('music.mp3');
+  musicAudio.loop = true;
+
+  musicAudio.addEventListener('ended', function() {
+    this.currentTime = 0;
+    this.play();
+}, false);
+
   reset();
 }
+
+
 
 function reset() {
   board = [];
@@ -329,6 +342,7 @@ function update() {
   if (inMenu) {
     if (keys[80] == 0) {
       inMenu = false;
+      musicAudio.play();
       reset();
     }
     return;
