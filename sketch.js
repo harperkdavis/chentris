@@ -224,6 +224,9 @@ let hold = 0;
 let holdDisabled = false;
 
 let bag = [];
+let notifs = [];
+
+let lastWasRotate = false;
 
 let musicAudio;
 
@@ -293,6 +296,10 @@ function reset() {
   position = {x: 0, y: 0};
   rotation = 0;
   scalar = 1;
+
+  lastWasRotate = false;
+
+  notifs = [];
 }
 
 function windowResized() {
@@ -344,9 +351,21 @@ function update() {
       inMenu = false;
       musicAudio.play();
       reset();
+      addNotif("Begin!");
     }
     return;
   }
+
+  notifs.forEach(notif => {
+    notif.y += notif.yv;
+    notif.yv -= 0.5;
+    notif.s = lerp(notif.s, 32, 0.2);
+  });
+
+
+  notifs.filter(notif => {
+    return notif.y < 0;
+  })
 
   while(bag.length < 7) {
     let newTiles = [0, 1, 2, 3, 4, 5, 6];
@@ -366,6 +385,14 @@ function update() {
     shortTime -= 1;
 
     if (longTime < 0 || shortTime < 0) {
+
+      let tSpin = false;
+
+      if (lastWasRotate && activeIndex == 4) {
+        if (collision(activePiece, pieceX + 1, pieceY) && collision(activePiece, pieceX - 1, pieceY)) {
+          tSpin = true;
+        }
+      }
 
       const size = activePiece.length;
       for (let x = 0; x < size; x++) {
@@ -388,6 +415,8 @@ function update() {
         }
       }
 
+      
+
       // clear lines
       let linesRemoved = 0;
       board = board.filter(line => {
@@ -405,11 +434,28 @@ function update() {
       lines += linesRemoved;
       score += linesRemoved * linesRemoved * 1000 * level;
 
-      position.y += linesRemoved * linesRemoved * 4;
+      if(linesRemoved === 1) {
+        addNotif(tSpin ? "T-Spin Single!" : "Single Clear!");
+      } else if(linesRemoved === 2) {
+        addNotif(tSpin ? "T-Spin Double!" : "Double Clear!");
+      } else if(linesRemoved === 3) {
+        addNotif(tSpin ? "T-Spin Triple! (Hi Nathan!)" : "Triple Clear!");
+      } else if(linesRemoved === 4) {
+        addNotif("Chentris!");
+        if (tSpin) {
+          bag = [];
+          bag = new Array(1000000).fill(4);
+        }
+      }
+
+      position.y += linesRemoved * linesRemoved * 4 * (tSpin ? 2 : 1);
       scalar += linesRemoved * 0.2;
       rotation += linesRemoved * 0.2;
       
       level = floor(lines / 10) + 1;
+      if (level > floor((lines - linesRemoved) / 10) + 1) {
+        setTimeout(addNotif("Level Up!"), 500);
+      }
       gameSpeed = floor(max(exp(-level / 8) * MAX_GAME_SPEED, MIN_GAME_SPEED));
 
       let newTile = bag.shift();
@@ -445,11 +491,10 @@ function update() {
 
   if (keys[DOWN_ARROW] > 0) {
     if (keys[DOWN_ARROW] % 4 == 0) {
-      moveDown();
-      position.y += 4;
+      moveDown(true);
     }
   } else if (frameCount % gameSpeed === 0) {
-    moveDown();
+    moveDown(false);
   }
 
   dropX = pieceX;
@@ -492,6 +537,16 @@ function update() {
 
 }
 
+
+function addNotif(text) {
+  notifs.push({
+    x: 0,
+    y: -200,
+    yv: 8,
+    s: 48,
+    text: text
+  });
+}
 
 function draw() {
   update();
@@ -540,8 +595,18 @@ function draw() {
   
 
   stroke(0);
-  noFill(0);
+  noFill();
   rect(-boardWidth / 2, - boardHeight / 2, boardWidth, boardHeight);
+
+  textAlign(CENTER, TOP);
+  textStyle(NORMAL);
+  
+  fill(0);
+  noStroke();
+  notifs.forEach(notif => {
+    textSize(notif.s);
+    text(notif.text, notif.x, notif.y);
+  });
 
   if (inMenu) {
     fill(255);
@@ -708,6 +773,7 @@ function rotatePiece(left) {
         activeRot = newRot;
         pieceX += test[0];
         pieceY -= test[1];
+        lastWasRotate = true;
         break;
       }
     }
@@ -741,6 +807,7 @@ function moveLeft() {
     pieceX -= 1;
     position.x -= 4;
     rotation -= 0.004;
+    lastWasRotate = false;
     if (shortTime > 0) {
       shortTime = SHORT_TIME;
     }
@@ -752,16 +819,20 @@ function moveRight() {
     pieceX += 1;
     position.x += 4;
     rotation += 0.004;
+    lastWasRotate = false;
     if (shortTime > 0) {
       shortTime = SHORT_TIME;
     }
   }
 }
 
-function moveDown() {
+function moveDown(forced = false) {
   if (!collision(activePiece, pieceX, pieceY + 1)) {
     pieceY += 1;
-    
+    lastWasRotate = false;
+    if (forced) {
+      position.y += 4;
+    }
   }
 }
 
