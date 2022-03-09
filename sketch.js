@@ -230,6 +230,8 @@ let lastWasRotate = false;
 
 let musicAudio;
 
+let paused = false;
+
 function setup() {
   createCanvas(windowWidth, windowHeight);
 
@@ -374,7 +376,21 @@ function update() {
 
   notifs.filter(notif => {
     return notif.y < 0;
-  })
+  });
+
+  if (paused) {
+    if (keys[76] == 0) {
+      paused = false;
+      addNotif("Unpaused!");
+      keys[76] = 1;
+    }
+    return;
+  } else if (keys[76] == 0) {
+    paused = true;
+    addNotif("Paused!");
+    keys[76] = 1;
+    return;
+  }
 
   while(bag.length < 7) {
     let newTiles = [0, 1, 2, 3, 4, 5, 6];
@@ -655,6 +671,7 @@ function draw() {
     text("[Z] to rotate right", 0, 100);
     text("[SPACE] to drop", 0, 120);
     text("[C] to use hold", 0, 140);
+    text("[L] to pause", 0, 160);
     return;
   }
 
