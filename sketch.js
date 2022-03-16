@@ -458,7 +458,7 @@ function update() {
       }
       lines += linesRemoved;
       let addPoints = linesRemoved * linesRemoved * 1000 * level * (tSpin ? 4 : 1);
-      score += addPoints;
+      score += floor(addPoints * exp(level / 100));
 
       if(linesRemoved === 1) {
         addNotif(tSpin ? "T-Spin Single!" : "Single Clear!");
