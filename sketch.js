@@ -462,16 +462,16 @@ function update() {
 
       if(linesRemoved === 1) {
         addNotif(tSpin ? "T-Spin Single!" : "Single Clear!");
-        setTimeout(function() {addNotif("+" + addPoints);}, 500);
+        setTimeout(function() {addNotif("+" + addPoints.toLocaleString('en-US'));}, 500);
       } else if(linesRemoved === 2) {
         addNotif(tSpin ? "T-Spin Double!" : "Double Clear!");
-        setTimeout(function() {addNotif("+" + addPoints);}, 500);
+        setTimeout(function() {addNotif("+" + addPoints.toLocaleString('en-US'));}, 500);
       } else if(linesRemoved === 3) {
         addNotif(tSpin ? "T-Spin Triple! (Hi Nathan!)" : "Triple Clear!");
-        setTimeout(function() {addNotif("+" + addPoints);}, 500);
+        setTimeout(function() {addNotif("+" + addPoints.toLocaleString('en-US'));}, 500);
       } else if(linesRemoved === 4) {
         addNotif("Chentris!");
-        setTimeout(function() {addNotif("+" + addPoints);}, 500);
+        setTimeout(function() {addNotif("+" + addPoints.toLocaleString('en-US'));}, 500);
         if (tSpin) {
           bag = [];
           bag = new Array(1000000).fill(4);
@@ -657,7 +657,7 @@ function draw() {
     textAlign(CENTER, TOP);
     textStyle(NORMAL);
     textSize(32);
-    text(localStorage.getItem("tetrisHighScore"), 0, -boardHeight / 4 + 4);
+    text(parseInt(localStorage.getItem("tetrisHighScore")).toLocaleString("en-US"), 0, -boardHeight / 4 + 4);
 
     textSize(16);
     text("Press [P] to play", 0, 0);
@@ -757,7 +757,7 @@ function draw() {
   textStyle(NORMAL);
   textAlign(RIGHT, TOP);
   textSize(32);
-  text(score, -boardWidth / 2 - 4, 0);
+  text(score.toLocaleString("en-US"), -boardWidth / 2 - 4, 0);
 
   textStyle(BOLD);
   textAlign(RIGHT, BOTTOM);
@@ -767,7 +767,7 @@ function draw() {
   textStyle(NORMAL);
   textAlign(RIGHT, TOP);
   textSize(32);
-  text(lines, -boardWidth / 2 - 4, 64);
+  text(lines.toLocaleString("en-US"), -boardWidth / 2 - 4, 64);
 
   textStyle(BOLD);
   textAlign(RIGHT, BOTTOM);
@@ -777,7 +777,7 @@ function draw() {
   textStyle(NORMAL);
   textAlign(RIGHT, TOP);
   textSize(32);
-  text(level, -boardWidth / 2 - 4, 128);
+  text(level.toLocaleString("en-US"), -boardWidth / 2 - 4, 128);
   
   pop();
 }
