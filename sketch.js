@@ -457,8 +457,8 @@ function update() {
         board.unshift([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
       }
       lines += linesRemoved;
-      let addPoints = linesRemoved * linesRemoved * 1000 * level * (tSpin ? 4 : 1);
-      score += floor(addPoints * exp(level / 100));
+      let addPoints = floor(linesRemoved * linesRemoved * 1000 * level * (tSpin ? 4 : 1) * exp(level / 100));
+      score += addPoints;
 
       if(linesRemoved === 1) {
         addNotif(tSpin ? "T-Spin Single!" : "Single Clear!");
@@ -484,7 +484,7 @@ function update() {
       
       level = floor(lines / 10) + 1;
       if (level > floor((lines - linesRemoved) / 10) + 1) {
-        setTimeout(function() {addNotif("Level Up!");}, 1000);
+        setTimeout(function() {addNotif("Level Up! (" + nf(level * exp(level / 100), 1, 3) + "x)");}, 1000);
       }
       gameSpeed = floor(max(exp(-level / 5) * MAX_GAME_SPEED, MIN_GAME_SPEED));
 
